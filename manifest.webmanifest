@@ -1,0 +1,20 @@
+{
+  "name": "Calle Segura · Lebu",
+  "short_name": "Calle Segura",
+  "description": "Reporta y sigue emergencias y problemas de tu comunidad.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#EEF4FF",
+  "theme_color": "#122B68",
+  "lang": "es-CL",
+  "icons": [
+    {
+      "src": "logo-calle-segura.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
