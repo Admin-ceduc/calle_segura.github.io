@@ -8,18 +8,27 @@
   <meta name="application-name" content="Calle Segura">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/logo-calle-segura.png">
+  <script>
+    const projectPath = location.hostname.endsWith('.github.io') && location.pathname.split('/').filter(Boolean)[0];
+    const appBasePath = projectPath ? `/${projectPath}/` : '/';
+    const appBase = document.createElement('base');
+    appBase.href = appBasePath;
+    document.head.appendChild(appBase);
+    window.CALLE_SEGURA_BASE_PATH = appBasePath;
+    window.CALLE_SEGURA_API_URL = '';
+  </script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="logo-calle-segura.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="/codigo.css?v=3">
+  <link rel="stylesheet" href="codigo.css?v=4">
 </head>
 <body>
   <div class="splash" id="splash" role="status" aria-live="polite">
     <div class="splash-glow"></div>
     <div class="splash-card">
-      <img class="splash-logo" src="/logo-calle-segura.png" alt="Calle Segura · Lebu · Emergencias">
+      <img class="splash-logo" src="logo-calle-segura.png" alt="Calle Segura · Lebu · Emergencias">
       <p class="splash-kicker">SEGURIDAD CIUDADANA</p>
       <div class="splash-loader" aria-hidden="true"><i></i></div>
       <span class="splash-status">Preparando tu comunidad</span>
@@ -28,10 +37,10 @@
   <div id="app"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="/app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js'));
+      window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
     }
   </script>
 </body>
