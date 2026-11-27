@@ -20,6 +20,10 @@ SSL_KEY_FILE = os.getenv("SSL_KEY_FILE")
 DEMO_PASSWORD = os.getenv("DEMO_PASSWORD")
 ALLOW_AUTO_REGISTRATION = os.getenv("ALLOW_AUTO_REGISTRATION", "0").lower() in ("1", "true", "yes", "on")
 EMERGENCY_SERVICES = frozenset(("Carabineros", "Bomberos", "Ambulancia", "Seguridad municipal", "Otro"))
+PUBLIC_EMERGENCY_CATEGORIES = frozenset((
+    "Incendio", "Rescate", "Fuga de gas", "Emergencia médica",
+    "Ruido molesto", "Vandalismo", "Emergencia general", "Otro",
+))
 LOGIN_MAX_ATTEMPTS = max(1, int(os.getenv("LOGIN_MAX_ATTEMPTS", "5")))
 LOGIN_WINDOW_SECONDS = max(60, int(os.getenv("LOGIN_WINDOW_SECONDS", "300")))
 SERVICE_AREA_ENABLED = os.getenv("SERVICE_AREA_ENABLED", "0").lower() in ("1", "true", "yes", "on")
@@ -437,8 +441,29 @@ def get_reports():
     db = connect_db()
     user = current_user(db)
     if user is None:
+        public_categories = tuple(PUBLIC_EMERGENCY_CATEGORIES)
+        placeholders = ",".join("?" for _ in public_categories)
+        rows = db.execute("""
+            SELECT r.id, r.latitude, r.longitude, r.created_at,
+                   c.name AS category, c.report_type, s.name AS status
+            FROM reports r
+            JOIN report_categories c ON c.id = r.category_id
+            JOIN report_statuses s ON s.id = r.status_id
+            WHERE c.report_type = 'emergency' AND c.name IN (""" + placeholders + """)
+            ORDER BY r.created_at DESC
+            LIMIT 200
+        """, public_categories).fetchall()
         db.close()
-        return jsonify({"error": "Debes iniciar sesión"}), 401
+        return jsonify([{
+            "id": row["id"],
+            "type": "em" if row["report_type"] == "emergency" else "pr",
+            "category": row["category"],
+            "status": row["status"],
+            "created_at": row["created_at"],
+            "latitude": round(row["latitude"], 3),
+            "longitude": round(row["longitude"], 3),
+            "public_view": True,
+        } for row in rows])
     if user["is_blocked"]:
         db.close()
         return jsonify({"error": "La cuenta está bloqueada"}), 403
@@ -450,8 +475,9 @@ def get_reports():
         JOIN users u ON u.id = r.user_id
         JOIN report_categories c ON c.id = r.category_id
         JOIN report_statuses s ON s.id = r.status_id
+        WHERE ? IN ('staff', 'admin') OR c.report_type = 'emergency' OR r.user_id = ?
         ORDER BY r.created_at DESC
-    """).fetchall()
+    """, (user["role"], user["id"])).fetchall()
     db.close()
     return jsonify([report_json(row, exact_location=user["role"] in ("staff", "admin")) for row in rows])
 
